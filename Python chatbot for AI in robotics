@@ -1,0 +1,80 @@
+import re
+import random
+
+# Define the intents
+intents = [
+    {
+        "tag": "greeting",
+        "patterns": ["hello", "hi", "hey", "what's up"],
+        "responses": ["Hi there!", "Hello!", "Hey!"]
+    },
+    {
+        "tag": "goodbye",
+        "patterns": ["bye", "goodbye", "see you later", "talk to you later"],
+        "responses": ["Goodbye!", "See you later!", "Take care!"]
+    },
+    {
+        "tag": "students",
+        "patterns": ["students", "class", "number of students"],
+        "responses": ["There are 72 students in the class."]
+    },
+    {
+        "tag": "college",
+        "patterns": ["college", "Lovely Professional University", "LPU", "courses"],
+        "responses": ["Lovely Professional University offers a wide range of courses in various disciplines."]
+    },
+    {
+        "tag": "teacher",
+        "patterns": ["teacher", "Java", "Puneet Kumar", "Maths", "Mamta Kapoor", "Analytical Skills", "Vikas Chaudhry", "Operating System", "Kirti"],
+        "responses": ["Your Java teacher is Puneet Kumar, Maths teacher is Mamta Kapoor, Analytical Skills teacher is Vikas Chaudhry, and Operating System teacher is Kirti."]
+    }
+]
+
+# Define the function to get the best response based on the user input
+def get_response(user_input):
+    split_message = re.split(r'\s+|[,;?!.-]\s*', user_input.lower())
+
+    # Find the best matching intent
+    highest_prob_list = {}
+    for intent in intents:
+        for pattern in intent["patterns"]:
+            message_certainty = 0
+            has_required_words = True
+            for word in split_message:
+                if word in pattern:
+                    message_certainty += 1
+
+            percentage = float(message_certainty) / float(len(pattern.split()))
+
+            if percentage > 0.5:
+                    for req_word in intent.get("required_words", []):
+                        if req_word not in split_message:
+                            has_required_words = False
+                            break
+                    if has_required_words:
+                        highest_prob_list[intent["tag"]] = percentage
+
+    # Find the intent with the highest probability
+    best_intent = None
+    highest_prob = 0
+    for intent_tag, prob in highest_prob_list.items():
+        if prob > highest_prob:
+            best_intent = intent_tag
+            highest_prob = prob
+
+    # Generate response based on the best intent
+    if best_intent:
+        for intent in intents:
+            if intent["tag"] == best_intent:
+                response = random.choice(intent["responses"])
+                break
+    else:
+        response = "I'm sorry, I do not understand. Can you please rephrase?"
+
+    return response
+
+# Run the chatbot
+while True:
+    user_input = input("You: ")
+    response = get_response(user_input)
+    print("Bot:", response)
